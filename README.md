@@ -26,4 +26,4 @@ fi
 I added this if-condition to enable it only for terminals with 256-colors support. 
 You may alternatively want to do it in global `/etc/bash.bashrc` file to make it available for all users. Note that you would need to specify full path to the script. Also in this case it would be better to put `qb-prompt.sh` to some user-independent place.
 
-If you have any question or comment, which in your opinion doesn't worth raising issue, you ask it [here](https://github.com/azymohliad/qb-prompt/issues/1).
+If you have any question or comment, which in your opinion doesn't worth raising issue, you can ask it [here](https://github.com/azymohliad/qb-prompt/issues/1).
