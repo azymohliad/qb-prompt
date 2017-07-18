@@ -12,17 +12,17 @@ As it already looks nice enough to me, keeping it fast is the next top priority.
 
 ## Installation
 
-**1. Install dependencies**
+**1. Install dependencies**  
 qb-prompt uses Powerline fonts. Check out [this link](https://powerline.readthedocs.io/en/latest/installation/linux.html#fonts-installation) for installation instructions. Note, if you have error on 4th step (no such file or directory ~/.config/fontconfig/conf.d/) just create it.
 If you use Arch Linux simply install `powerline-fonts` package.
 
-**2. Download the script**
+**2. Download the script**  
 E.g. into your home dir:
 ```
 wget -O ~/.qb-prompt.sh https://raw.githubusercontent.com/azymohliad/qb-prompt/master/qb-prompt.sh
 ```
 
-**3. Source it from your `~/.bashrc` file.**
+**3. Source it from your `~/.bashrc` file.**  
 Add these lines to the end of it:
 ```
 # qb-prompt
