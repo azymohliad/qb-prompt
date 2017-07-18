@@ -2,7 +2,7 @@
 **Q**uick and **B**eautiful **prompt** for bash.  
 
 It is inspired by [Powerline](https://github.com/powerline/powerline), which is feature rich project written in Python. I happily used it for some time, but got annoyed by it's low performance (at least on my old machine).   
-**qb-prompt** aims to provide similar look and feel, at the same time remaining as simple and lightweight as possible. It is just a tiny shell-script which you can even simply paste into your `.bashrc` file. Currently it works only with bash. It doesn't have vim, tmux statuslines, git integration, etc. If you look for something more powerfull, take a look at [Powerline](https://github.com/powerline/powerline).
+**qb-prompt** aims to provide similar look and feel, at the same time remaining as simple and lightweight as possible. It is just a tiny shell-script which you can even simply paste into your `.bashrc` file. Currently it works only with bash. It doesn't have vim, tmux statuslines, git integration, etc. If you look for something more powerfull, check out [Powerline](https://github.com/powerline/powerline).
 
 ![screenshot from 2017-07-18 18-11-44](https://user-images.githubusercontent.com/4020369/28313033-d6102df0-6be7-11e7-95df-53f1735812e3.png)
 
