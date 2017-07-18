@@ -12,11 +12,13 @@ It is inspired by [Powerline](https://github.com/powerline/powerline), which is 
 wget -O ~/.qb-prompt.sh https://raw.githubusercontent.com/azymohliad/qb-prompt/master/qb-prompt.sh
 ```
 
-2. Source it from your `~/.bashrc` file (if you use zsh or any other shell you know what to do yourself). Add these lines to the end of it:
+2. Source it from your `~/.bashrc` file. Add these lines to the end of it:
 ```
 if [ "${TERM}" == "xterm-256color" ]; then
-    . /home/andrii/.prompt.sh
+    . ~/.qb-prompt.sh
 fi
 ```
 I added this if-condition to enable it only for terminals with 256-colors support.
 You may alternatively want to do it in global `/etc/bash.bashrc` file to make it available for all users. Note that you would need to specify full path to the script. Also in this case it would be better to put `qb-prompt.sh` to some user-independent place.
+
+P.S. Sorry for focusing on bash. If you use zsh or any other shell, you know what to do yourself ;)
