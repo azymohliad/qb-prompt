@@ -6,9 +6,8 @@
 
 It is inspired by [Powerline](https://github.com/powerline/powerline), which is feature rich project written in Python. I happily used it for some time, but got annoyed by it's low performance (big initial loading time, around 1 sec for me).   
 **qb-prompt** aims to provide similar look and feel, at the same time remaining as simple and lightweight as possible. It is just a tiny shell-script which you can simply paste into your `.bashrc` file.
-![screenshot from 2017-07-18 18-11-44](https://user-images.githubusercontent.com/4020369/28313033-d6102df0-6be7-11e7-95df-53f1735812e3.png)
 
-As it already looks nice enough to me, keeping it fast is the next top priority. I plan to experiment with few more features (error code indication, display working jobs number, git integration, etc), but if they will notably decrease performance, most probably I won't add them.
+![screenshot from 2017-07-18 18-11-44](https://user-images.githubusercontent.com/4020369/28313033-d6102df0-6be7-11e7-95df-53f1735812e3.png)
 
 ## Installation
 
