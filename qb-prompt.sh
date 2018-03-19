@@ -4,8 +4,12 @@
 ################################## qb-prompt ##################################
 ###############################################################################
 
+# Apply only if terminal supports 8-bit colors 
+if [ "${TERM}" != "xterm-256color" ]; then
+    echo "qb-prompt: terminal does not support 8-bit colors"
+else
+
 ## Helper vars
-# Formatting
 F_DEFAULT_CLR="9m"
 F_BOLD="\e[1m"
 F_ITALIC="\e[3m"
@@ -106,3 +110,5 @@ export PS1="${PROMPT} "'
 export PS2="\[${F_FG}${C_GREY}${F_BG}${F_DEFAULT_CLR}\] \[${F_END}\]"
 export PS3="\[${F_FG}${C_GREY}${F_BG}${F_DEFAULT_CLR}\] \[${F_END}\]"
 export PS4="\[${F_FG}${C_WHITE}${F_BG}${C_GREY}\]+\[${F_FG}${C_GREY}${F_BG}${F_DEFAULT_CLR}\] \[${F_END}\]"
+
+fi # if [ "${TERM}" = "xterm-256color"]; then

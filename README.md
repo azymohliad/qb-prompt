@@ -25,9 +25,7 @@ wget -O ~/.qb-prompt.sh https://raw.githubusercontent.com/azymohliad/qb-prompt/m
 Add these lines to the end of it:
 ```
 # qb-prompt
-if [ "${TERM}" == "xterm-256color" ]; then
-    . ~/.qb-prompt.sh
-fi
+. ~/.qb-prompt.sh
 ```
 You may alternatively want to do it in global `/etc/bash.bashrc` file to make it available for all users. Note that you would need to specify full path to the script. Also in this case it would be better to put `qb-prompt.sh` to some user-independent place.
 
