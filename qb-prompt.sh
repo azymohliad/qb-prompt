@@ -30,6 +30,7 @@ BG_HOST="8;5;95";   FG_HOST="7"
 BG_ROOT="8;5;130";  FG_ROOT="7"
 BG_USER="8;5;70";   FG_USER="7"
 BG_DIR="8;5;241";   FG_DIR="7"
+BG_SSH="8;5;252";   FG_SSH="8;5;70"
 BG_ERR="8;5;52";    FG_ERR="7"
 
 FMT_USER="${F_BOLD}"
@@ -40,13 +41,23 @@ FMT_DIR="${F_ITALIC}"
 ## Widgets
 i=0;
 
-# HOST indicator
+# SSH indicator
+if [ -n "${SSH_TTY}" ]; then
+    SW_CONTENT[$i]=" 🗗 "
+    SW_BG[$i]="${BG_SSH}m"
+    SW_FG[$i]="${FG_SSH}m"
+    SW_FMT[$i]=""
+    SW_TERM[$i]=""
+    ((i++))
+fi
+
+# Host
 if [ -n "${WIDGET_HOST}" ]; then
     SW_CONTENT[$i]=" \\${WIDGET_HOST} "
     SW_BG[$i]="${BG_HOST}m"
     SW_FG[$i]="${FS_HOST}m"
-    SW_FMT[$i]=${FMT_HOST}
-    SW_TERM[$i]=""
+    SW_FMT[$i]="${FMT_HOST}"
+    SW_TERM[$i]=""
     ((i++))
 fi
 
@@ -59,15 +70,15 @@ else
     SW_BG[$i]="${BG_USER}m"
     SW_FG[$i]="${FG_USER}m"
 fi
-SW_FMT[$i]=${FMT_USER}
-SW_TERM[$i]=""
+SW_FMT[$i]="${FMT_USER}"
+SW_TERM[$i]=""
 ((i++))
 
 # Working directory
 SW_CONTENT[$i]=" \\${WIDGET_DIR} "
 SW_BG[$i]="${BG_DIR}m"
 SW_FG[$i]="${FG_DIR}m"
-SW_FMT[$i]=${FMT_DIR}
+SW_FMT[$i]="${FMT_DIR}"
 SW_TERM[$i]=""
 ((i++))
 
