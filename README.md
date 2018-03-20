@@ -7,7 +7,7 @@
 It is inspired by [Powerline](https://github.com/powerline/powerline), which is feature rich project written in Python. I happily used it for some time, but got annoyed by it's low performance (big initial loading time, around 1 sec for me).   
 **qb-prompt** aims to provide similar look and feel, at the same time remaining as simple and lightweight as possible. It is just a tiny shell-script which you can simply paste into your `.bashrc` file.
 
-![screenshot from 2017-07-18 18-11-44](https://user-images.githubusercontent.com/4020369/28313033-d6102df0-6be7-11e7-95df-53f1735812e3.png)
+![screenshot from 2018-03-20 09-51-18](https://user-images.githubusercontent.com/4020369/37631403-8220d8cc-2c24-11e8-8ce8-b28c1e41d163.png)
 
 ## Installation
 
