@@ -1,0 +1,107 @@
+// Available widgets:
+
+// ------------------------------------------------------------------------------------------------------
+// | Widget name     | Description                                   | Type    | "extra" field          |
+// |----------------------------------------------------------------------------------------------------|
+// | WG_SSH_MARKER   | Indicate when on SSH connection               | static  | marker symbol          |
+// | WG_SSH_ADDRESS  | Display server address when on SSH connection | static  | marker symbol          |
+// | WG_USER_MARKER  | Display '#' for root, '$' for other users     | static  | 'bg' and 'fg' for root |
+// | WG_USER_NAME    | Display user name (different color for root)  | static  | 'bg' and 'fg' for root |
+// | WG_JOBS_NUMBER  | Display background jobs number if any         | runtime | -                      |
+// | WG_ERROR_CODE   | Display return code for last command if error | runtime | -                      |
+// | WG_GIT_BRANCH   | Display current git branch when in git repo   | runtime | marker symbol          |
+// | WG_GIT_MARKER   | Indicate when in git repo                     | runtime | marker symbol          |
+// | WG_CUSTOM       | Any custom text (e.g. bash promptescape-chars)| static  | content                |
+// ------------------------------------------------------------------------------------------------------
+
+// Widget fields:
+// fg - foreground color
+// bg - background color
+// term - symbol which separate current widget from the next
+// fmt - additional formatting string, consisting from characters: 'b' (for bold), 'i' (for italic)
+// extra - custom data, defined by widget type
+
+// Colors: 
+// Colors are represented as single 8-bit numbers, according to this table
+// https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+
+{
+    "PS1": {
+        "left": [
+            {
+                "type": "WG_SSH_MARKER",
+                "fg": 70,
+                "bg": 252,
+                "term": "",
+                "extra": " 🗗 "
+            },
+            {
+                "type": "WG_USER_MARKER",
+                "fg": 7,
+                "bg": 70,
+                "term": "",
+                "fmt": "b",
+                "extra": {
+                    "fg": 7,
+                    "bg": 130
+                }
+            },
+            {
+                "type": "WG_CUSTOM",
+                "fg": 7,
+                "bg": 241,
+                "term": "",
+                "fmt": "i",
+                "extra": " \\w "
+            },
+            {
+                "type": "WG_JOBS_NUMBER",
+                "fg": 7,
+                "bg": 99,
+                "term": ""
+            },
+            {
+                "type": "WG_ERROR_CODE",
+                "fg": 7,
+                "bg": 52,
+                "term": ""
+            }
+        ],
+        "right": [
+            {
+                "type": "WG_GIT_BRANCH"
+            }
+        ]
+    },
+
+    "PS2": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": ""
+            }
+        ]
+    },
+
+    "PS3": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": ""
+            }
+        ]
+    },
+
+    "PS4": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+                "extra": "+"
+            }
+        ]
+    }
+}
