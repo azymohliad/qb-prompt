@@ -16,12 +16,24 @@ widget_types = [
     'WG_GIT_MARKER'
 ]
 
-F_DEFAULT_CLR = "9m"
-F_BOLD        = "\e[1m"
-F_ITALIC      = "\e[3m"
-F_BG          = "\e[4"
-F_FG          = "\e[3"
-F_END         = "\e[0m"
+DEFAULT_BG_COLOR = 9
+DEFAULT_FG_COLOR = 9
+DEFAULT_FORMATTING = ''
+DEFAULT_TERMINATOR = ''
+DEFAULT_PREFIX = ' '
+DEFAULT_SUFIX = ' '
+DEFAULT_CONTENT = ''
+
+F_BOLD           = "\e[1m"
+F_ITALIC         = "\e[3m"
+F_BG             = "\e[4"
+F_FG             = "\e[3"
+F_END            = "\e[0m"
+F_SAVE_CURSOR    = "\e[s"
+F_RESTORE_CURSOR = "\e[u"
+F_MOVE_CURSOR_B  = "\e["
+F_MOVE_CURSOR_E  = "C"
+
 
 def convert_color(clr):
     return f'{"" if clr < 16 else "8;5;"}{clr}m'
@@ -40,76 +52,115 @@ def indent(code, size):
 
 # Classes
 class Widget:
-    def __init__(self, dct):
+    def __init__(self, dct, is_right_aligned):
         self.name = dct.get('type')
-        self.fg = convert_color(dct.get('fg', 9))
-        self.bg = convert_color(dct.get('bg', 9))
-        self.fmt = convert_formatting(dct.get('fmt', ''))
-        self.term = dct.get('term', '')
-        self.is_static = True
+        self.fg = convert_color(dct.get('fg', DEFAULT_FG_COLOR))
+        self.bg = convert_color(dct.get('bg', DEFAULT_BG_COLOR))
+        self.fmt = convert_formatting(dct.get('fmt', DEFAULT_FORMATTING))
+        self.term = dct.get('term', DEFAULT_TERMINATOR)
+        self.prefix = dct.get('prefix', DEFAULT_PREFIX)
+        self.sufix = dct.get('sufix', DEFAULT_SUFIX)
+        self.content = dct.get('content', DEFAULT_CONTENT)
+        self.is_right_aligned = is_right_aligned
 
-    def gen_transition(self):
-        return f'${{{self.name}_TRANSITION}}'
+        self.static_length = len(self.term) + len(self.prefix) + len(self.sufix)
+        self.printable = ''
+        self.pre_conditional_code = ''
+        self.condition_code = ':'
+        self.conditional_success_code = ''
+        self.conditional_fail_code = ''
 
-    def gen_content(self, prev_transition):
-        return f'${{{self.name}_CONTENT}}'
+    def get_content(self, prev_transition):
+        if self.is_right_aligned:
+            code = f'{F_FG}{self.fg}{F_BG}{self.bg}{self.fmt}\]{self.printable}'\
+                   f'\[{F_END}{F_BG}{self.bg}{prev_transition}{F_END}'
+        else:
+            code = f'{F_BG}{self.bg}{prev_transition}{F_FG}{self.fg}{self.fmt}\]'\
+                   f'{self.printable}\[{F_END}'
+        return code
 
-class DynamicWidget(Widget):
-    def __init__(self, dct):
-        super().__init__(dct)
-        self.is_static = False
+    def get_printable_length(self): return len(self.printable) + len(self.term)
 
-class WgSshMarker(Widget):
-    def __init__(self, dct):
-        super().__init__(dct)
-        self.marker = dct.get('extra', '')
+    def get_printable_length_definitions(self):
+        printable_length = self.get_printable_length()
+        if self.is_right_aligned and not isinstance(printable_length, int):
+            length_definition_visible = f'{self.name}_LEN="{self.get_printable_length()}"\n'
+            length_definition_hidden = f'{self.name}_LEN=0\n'
+            return (length_definition_visible, length_definition_hidden)
+        else:
+            return ('', '')
 
-    def gen_precondition(self, prev_transition):
-        preformat = f'{F_BG}{self.bg}{prev_transition}{F_FG}{self.fg}{self.fmt}\]'
-        postformat = f'\[{F_END}'
+
+    def generate_printable_length_code(self): return f'${{{self.name}_LEN}}'
+
+    def generate_transition_code(self): return f'${{{self.name}_TRANSITION}}'
+
+    def generate_content_code(self, prev_transition): return f'${{{self.name}_CONTENT}}'
+
+    def generate_init_code(self, prev_transition):
+        length_definition_visible, length_definition_hidden = self.get_printable_length_definitions()
         code = f'''\
-            if [ -n "${{SSH_TTY}}" ]; then
-                {self.name}_CONTENT="{preformat}{self.marker}{postformat}"
+            {self.pre_conditional_code}
+            if {self.condition_code}; then
+                {self.conditional_success_code}
+                {self.name}_CONTENT="{self.get_content(prev_transition)}"
                 {self.name}_TRANSITION="{F_FG}{self.bg}\]{self.term}\["
+                {length_definition_visible}
             else
+                {self.conditional_fail_code}
                 {self.name}_CONTENT=""
                 {self.name}_TRANSITION="{prev_transition}"
-            fi\n'''
+                {length_definition_hidden}
+            fi
+            '''
         return indent(code, -12)
 
+class StaticWidget(Widget): is_static = True
 
-class WgSshAddress(Widget):
-    def gen_precondition(self, prev_transition):
-        preformat = f'{F_BG}{self.bg}{prev_transition}{F_FG}{self.fg}{self.fmt}\]'
-        postformat = f'\[{F_END}'
-        code = f'''\
-            SSH_ADDRESS=$(echo ${{SSH_CONNECTION}} | sed -r 's/\S+ \S+ (\S+) \S+/\1/')
-            if [ -n "${{SSH_ADDRESS}}" ]; then
-                {self.name}_CONTENT="{preformat} ${{SSH_ADDRESS}} {postformat}"
-                {self.name}_TRANSITION="{F_FG}{self.bg}\]{self.term}\["
-            else
-                {self.name}_CONTENT=""
-                {self.name}_TRANSITION="{prev_transition}"
-            fi\n'''
-        return indent(code, -12)
+class DynamicWidget(Widget): is_static = False
 
+class WgSshMarker(StaticWidget):
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = self.prefix + self.content + self.sufix
+        self.condition_code = '[ -n "${SSH_TTY}" ]'
 
-class WgUserMarker(Widget):
-    def __init__(self, dct):
-        super().__init__(dct)
-        self.content = ' \\$ '
-        self.root_bg = dct.get('extra', {}).get('bg', 9)
-        self.root_fg = dct.get('extra', {}).get('fg', 9)
+    def generate_printable_length_code(self): return self.get_printable_length()
 
-    def gen_transition(self):
-        return f'{F_FG}${{USER_BG}}\]{self.term}\['
+class WgSshAddress(StaticWidget):
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = f'{self.prefix}${{SSH_ADDRESS}}{self.sufix}'
+        self.pre_conditional_code = 'SSH_ADDRESS=$(echo ${SSH_CONNECTION} | sed -r "s/\S+ \S+ (\S+) \S+/\\1/")'
+        self.condition_code = '[ -n "${SSH_ADDRESS}" ]'
 
-    def gen_content(self, prev_transition):
-        preformat = f'{F_BG}${{USER_BG}}{prev_transition}{F_FG}${{USER_FG}}{self.fmt}\]'
-        postformat = f'\[{F_END}'
-        return f'{preformat}{self.content}{postformat}'
+    def get_printable_length(self): return f'$(({{#SSH_ADDRESS}} + {self.static_length}))'
 
-    def gen_precondition(self, prev_transition):
+class WgUserMarker(StaticWidget):
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = self.prefix + '\\$' + self.sufix
+        self.root_bg = dct.get('secondary_bg', DEFAULT_BG_COLOR)
+        self.root_fg = dct.get('secondary_fg', DEFAULT_FG_COLOR)
+
+    def get_content(self, prev_transition):
+        if self.is_right_aligned:
+            code = f'{F_BG}${{USER_BG}}{F_FG}${{USER_FG}}{self.fmt}\]{self.printable}'\
+                   f'\[{F_END}{F_BG}${{USER_BG}}{prev_transition}{F_END}'
+        else:
+            code = f'{F_BG}${{USER_BG}}{prev_transition}{F_FG}${{USER_FG}}{self.fmt}\]'\
+                   f'{self.printable}\[{F_END}'
+        return code
+
+    def get_printable_length(self): return self.static_length + 1
+
+    def generate_printable_length_code(self): return self.get_printable_length()
+
+    def generate_transition_code(self): return f'{F_FG}${{USER_BG}}\]{self.term}\['
+
+    def generate_content_code(self, prev_transition): return self.get_content(prev_transition)
+
+    def generate_init_code(self, prev_transition):
         code = f'''\
             if [ ${{UID}} -eq 0 ]; then
                 USER_BG="{self.root_bg}"
@@ -117,157 +168,161 @@ class WgUserMarker(Widget):
             else
                 USER_BG="{self.bg}"
                 USER_FG="{self.fg}"
-            fi\n'''
+            fi
+            {self.get_printable_length_definitions()[0]}
+            '''
         return indent(code, -12)
-
 
 class WgUserName(WgUserMarker):
-    def __init__(self, dct):
-        super().__init__(dct)
-        self.content = ' \\u '
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = self.prefix + '\\u' + self.sufix
+
+    def get_printable_length(self): return f'$((${{#USER}} + {self.static_length}))'
+
+    def generate_printable_length_code(self): return f'${{{self.name}_LEN}}'
+
+class WgCustom(StaticWidget):
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = self.prefix + self.content + self.sufix
+        self.length = dct.get('length', len(self.printable))
 
 
-class WgCustom(Widget):
-    def __init__(self, dct):
-        super().__init__(dct)
-        self.content = dct.get('extra', '')
+    def get_printable_length(self): 
+        if isinstance(self.length, int):
+            return self.length + self.static_length
+        else:
+            return f'$(({self.length} + {self.static_length}))'
 
-    def gen_transition(self):
-        return f'{F_FG}{self.bg}\]{self.term}\['
+    def generate_printable_length(self):
+        if isinstance(self.length, int):
+            return self.get_printable_length()
+        else:
+            return f'${{{self.name}_LEN}}'
 
-    def gen_content(self, prev_transition):
-        if len(self.content) == 0 and len(prev_transition) == 0:
+    def generate_transition_code(self): return f'{F_FG}{self.bg}\]{self.term}\['
+
+    def generate_content_code(self, prev_transition):
+        if len(self.printable) == 0 and len(prev_transition) == 0:
             return ''
         else:
-            preformat = f'{F_BG}{self.bg}{prev_transition}{F_FG}{self.fg}{self.fmt}\]'
-            postformat = f'\[{F_END}'
-            return f'{preformat}{self.content}{postformat}'
+            return self.get_content(prev_transition)
 
-    def gen_precondition(self, prev_transition):
-        return ''
-
+    def generate_init_code(self, prev_transition):
+        return self.get_printable_length_definitions()[0]
 
 class WgJobsNumber(DynamicWidget):
-    def gen_precondition(self, prev_transition):
-        preformat = f'{F_BG}{self.bg}{prev_transition}{F_FG}{self.fg}{self.fmt}\]'
-        postformat = f'\[{F_END}'
-        code = f'''\
-            JOBS_NUM=$(jobs | wc -l)
-            if [ ${{JOBS_NUM}} -gt 0 ]; then
-                {self.name}_CONTENT="{preformat} ${{JOBS_NUM}} {postformat}"
-                {self.name}_TRANSITION="{F_FG}{self.bg}{self.term}"
-            else
-                {self.name}_CONTENT=""
-                {self.name}_TRANSITION="{prev_transition}"
-            fi\n'''
-        return indent(code, -12)
-
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = f'{self.prefix}${{JOBS_NUM}}{self.sufix}'
+        self.pre_conditional_code = 'JOBS_NUM=$(jobs | wc -l)'
+        self.condition_code = '[ ${JOBS_NUM} -gt 0 ]'
+    
+    def get_printable_length(self): return f'$((${{#JOBS_NUM}} + {self.static_length}))'
 
 class WgErrorCode(DynamicWidget):
-    def gen_precondition(self, prev_transition):
-        preformat = f'{F_BG}{self.bg}{prev_transition}{F_FG}{self.fg}{self.fmt}\]'
-        postformat = f'\[{F_END}'
-        code = f'''\
-            if [ ${{ERR_CODE}} -ne 0 ]; then
-                {self.name}_CONTENT="{preformat} ${{ERR_CODE}} {postformat}"
-                {self.name}_TRANSITION="{F_FG}{self.bg}{self.term}"
-            else
-                {self.name}_CONTENT=""
-                {self.name}_TRANSITION="{prev_transition}"
-            fi\n'''
-        return indent(code, -12)
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = f'{self.prefix}${{ERR_CODE}}{self.sufix}'
+        self.condition_code = '[ ${ERR_CODE} -ne 0 ]'
 
+    def get_printable_length(self): return f'$((${{#ERR_CODE}} + {self.static_length}))'
 
 class WgGitBranch(DynamicWidget):
-    def gen_precondition(self, prev_transition):
-        preformat = f'{F_BG}{self.bg}{prev_transition}{F_FG}{self.fg}{self.fmt}\]'
-        postformat = f'\[{F_END}'
-        code = f'''\
-            GIT_STATUS=$(git status --porcelain -b 2> /dev/null)
-            if [ $? -eq 0 ]; then
-                GIT_BRANCH=$(echo ${{GIT_STATUS}} | sed -rn '1s/## (\S+?)\.{{3}}.*/\1/p')
-                {self.name}_CONTENT="{preformat} ${{GIT_BRANCH}} {postformat}"
-                {self.name}_TRANSITION="{F_FG}{self.bg}{self.term}"
-            else
-                {self.name}_CONTENT=""
-                {self.name}_TRANSITION="{prev_transition}"
-            fi\n'''
-        return indent(code, -12)
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = f'{self.prefix}${{GIT_BRANCH}}{self.sufix}'
+        self.pre_conditional_code = 'GIT_STATUS=$(git status --porcelain -b 2> /dev/null)'
+        self.conditional_success_code = 'GIT_BRANCH=$(echo ${GIT_STATUS} | sed -rn "1s/## (\S+?)\.{3}.*/\\1/p")'
+        self.condition_code = '[ $? -eq 0 ]'
 
+    def get_printable_length(self): return f'$((${{#GIT_BRANCH}} + {self.static_length}))'
 
 class WgGitMarker(DynamicWidget):
-    def __init__(self, dct):
-        super().__init__(dct)
-        self.marker = dct.get('extra', '')
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.printable = self.prefix + self.content + self.sufix
+        self.condition_code = 'git status &> /dev/null'
 
-    def gen_precondition(self, prev_transition):
-        preformat = f'{F_BG}{self.bg}{prev_transition}{F_FG}{self.fg}{self.fmt}\]'
-        postformat = f'\[{F_END}'
-        code = f'''\
-            if git status &> /dev/null; then
-                {self.name}_CONTENT="{preformat}{self.marker}{postformat}"
-                {self.name}_TRANSITION="{F_FG}{self.bg}{self.term}"
-            else
-                {self.name}_CONTENT=""
-                {self.name}_TRANSITION="{prev_transition}"
-            fi\n'''
-        return indent(code, -12)
+    def gen_printable_length_code(self): return self.get_printable_length()
 
-def create_widget(dct):
+def create_widget(dct, is_right_aligned):
     widget = None
-    type = dct.get('type')
-    if type == 'WG_SSH_MARKER':
-        widget = WgSshMarker(dct)
-    elif type == 'WG_SSH_ADDRESS':
-        widget = WgSshAddress(dct)
-    elif type == 'WG_USER_MARKER':
-        widget = WgUserMarker(dct)
-    elif type == 'WG_USER_NAME':
-        widget = WgUserName(dct)
-    elif type == 'WG_CUSTOM':
-        widget = WgCustom(dct)
-    elif type == 'WG_JOBS_NUMBER':
-        widget = WgJobsNumber(dct)
-    elif type == 'WG_ERROR_CODE':
-        widget = WgErrorCode(dct)
-    elif type == 'WG_GIT_BRANCH':
-        widget = WgGitBranch(dct)
-    elif type == 'WG_GIT_MARKER':
-        widget = WgGitMarker(dct)
+    widget_type = dct.get('type')
+    if widget_type == 'WG_SSH_MARKER':
+        widget = WgSshMarker(dct, is_right_aligned)
+    elif widget_type == 'WG_SSH_ADDRESS':
+        widget = WgSshAddress(dct, is_right_aligned)
+    elif widget_type == 'WG_USER_MARKER':
+        widget = WgUserMarker(dct, is_right_aligned)
+    elif widget_type == 'WG_USER_NAME':
+        widget = WgUserName(dct, is_right_aligned)
+    elif widget_type == 'WG_CUSTOM':
+        widget = WgCustom(dct, is_right_aligned)
+    elif widget_type == 'WG_JOBS_NUMBER':
+        widget = WgJobsNumber(dct, is_right_aligned)
+    elif widget_type == 'WG_ERROR_CODE':
+        widget = WgErrorCode(dct, is_right_aligned)
+    elif widget_type == 'WG_GIT_BRANCH':
+        widget = WgGitBranch(dct, is_right_aligned)
+    elif widget_type == 'WG_GIT_MARKER':
+        widget = WgGitMarker(dct, is_right_aligned)
     else:
-        raise RuntimeError(f'Wrong widget type: {type}.\nSupported types: {str(widget_types)}')
+        raise RuntimeError(f'Wrong widget type: {widget_type}.\nSupported types: {str(widget_types)}')
     return widget
 
 
 class Prompt:
     def __init__(self, name, dct):
         self.name = name
-        self.left = [create_widget(wg_dct) for wg_dct in dct.get('left', [])]
-        self.right = [create_widget(wg_dct) for wg_dct in dct.get('right', [])]
+        self.left = [create_widget(wg_dct, False) for wg_dct in dct.get('left', [])]
+        self.right = [create_widget(wg_dct, True) for wg_dct in dct.get('right', [])]
 
     def static_only(self):
         return all(map(lambda x: x.is_static, self.left + self.right))
 
-    def gen_preconditions(self):
-        static = ''
-        dynamic = ''
+    def generate_init_codes(self, right_aligned):
+        static_init_code = ''
+        dynamic_init_code = ''
         last_transition = ''
-        for widget in self.left:
+        widgets = self.right if right_aligned else self.left
+        for widget in widgets:
             if widget.is_static:
-                static += widget.gen_precondition(last_transition)
+                static_init_code += widget.generate_init_code(last_transition)
             else:
-                dynamic += widget.gen_precondition(last_transition)
-            last_transition = widget.gen_transition()
-        return (static, dynamic)
+                dynamic_init_code += widget.generate_init_code(last_transition)
+            last_transition = widget.generate_transition_code()
+        return (static_init_code, dynamic_init_code)
 
-    def gen_prompt(self):
-        code = '\['
-        last_transition = ''
-        for widget in self.left:
-            code += widget.gen_content(last_transition)
-            last_transition = widget.gen_transition()
-        code += f'{self.left[-1].gen_transition()}{F_END}\] '
-        return code
+    def generate_content_code(self):
+        left_prompt = ''
+        if len(self.left) > 0:
+            last_transition = ''
+            for widget in self.left:
+                left_prompt += widget.generate_content_code(last_transition)
+                last_transition = widget.generate_transition_code()
+            left_prompt += self.left[-1].generate_transition_code() + F_END
+
+        right_prompt = ''
+        if len(self.right) > 0:
+            last_transition = ''
+            printable_lengths = []
+            printable_length_num = 0
+            for widget in self.right:
+                right_prompt = widget.generate_content_code(last_transition) + right_prompt
+                last_transition = widget.generate_transition_code()
+                printable_length = widget.generate_printable_length_code()
+                if isinstance(printable_length, int):
+                    printable_length_num += printable_length
+                else:
+                    printable_lengths.append(printable_length)
+            if printable_length_num > 0:
+                printable_lengths.append(str(printable_length_num))
+            printable_length = '-'.join(printable_lengths)
+            right_prompt = self.right[-1].generate_transition_code() + right_prompt
+            right_prompt = f'{F_SAVE_CURSOR}{F_MOVE_CURSOR_B}$((${{COLUMNS}}-{printable_length})){F_MOVE_CURSOR_E}{right_prompt}{F_RESTORE_CURSOR}'
+        return f'\[{right_prompt}{left_prompt} \]'
 
 
 class Prompts:
@@ -282,13 +337,17 @@ class Prompts:
         dynamic_code = ''
 
         for ps in [self.ps1, self.ps2, self.ps3, self.ps4]:
-            preconditions = ps.gen_preconditions()
+            preconditions = ps.generate_init_codes(False)
             static_code += preconditions[0]
             dynamic_code += preconditions[1]
+            preconditions = ps.generate_init_codes(True)
+            static_code += preconditions[0]
+            dynamic_code += preconditions[1]
+
             if ps.static_only():
-                static_code += f'\nexport {ps.name}="{ps.gen_prompt()}"'
+                static_code += f'\nexport {ps.name}="{ps.generate_content_code()}"'
             else:
-                dynamic_code += f'\nexport {ps.name}="{ps.gen_prompt()}"'
+                dynamic_code += f'\nexport {ps.name}="{ps.generate_content_code()}"'
 
         if len(dynamic_code) > 0:
             dynamic_code=f'''\
