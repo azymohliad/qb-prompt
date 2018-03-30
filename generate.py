@@ -134,14 +134,14 @@ class WgSshAddress(StaticWidget):
         self.pre_conditional_code = 'SSH_ADDRESS=$(echo ${SSH_CONNECTION} | sed -r "s/\S+ \S+ (\S+) \S+/\\1/")'
         self.condition_code = '[ -n "${SSH_ADDRESS}" ]'
 
-    def get_printable_length(self): return f'$(({{#SSH_ADDRESS}} + {self.static_length}))'
+    def get_printable_length(self): return f'$((${{#SSH_ADDRESS}} + {self.static_length}))'
 
 class WgUserMarker(StaticWidget):
     def __init__(self, dct, is_right_aligned):
         super().__init__(dct, is_right_aligned)
         self.printable = self.prefix + '\\$' + self.sufix
-        self.root_bg = dct.get('secondary_bg', DEFAULT_BG_COLOR)
-        self.root_fg = dct.get('secondary_fg', DEFAULT_FG_COLOR)
+        self.root_bg = convert_color(dct.get('secondary_bg', DEFAULT_BG_COLOR))
+        self.root_fg = convert_color(dct.get('secondary_fg', DEFAULT_FG_COLOR))
 
     def get_content(self, prev_transition):
         if self.is_right_aligned:
@@ -188,7 +188,6 @@ class WgCustom(StaticWidget):
         self.printable = self.prefix + self.content + self.sufix
         self.length = dct.get('length', len(self.printable))
 
-
     def get_printable_length(self): 
         if isinstance(self.length, int):
             return self.length + self.static_length
@@ -234,7 +233,7 @@ class WgGitBranch(DynamicWidget):
         super().__init__(dct, is_right_aligned)
         self.printable = f'{self.prefix}${{GIT_BRANCH}}{self.sufix}'
         self.pre_conditional_code = 'GIT_STATUS=$(git status --porcelain -b 2> /dev/null)'
-        self.conditional_success_code = 'GIT_BRANCH=$(echo ${GIT_STATUS} | sed -rn "1s/## (\S+?)\.{3}.*/\\1/p")'
+        self.conditional_success_code = 'GIT_BRANCH=$(echo ${GIT_STATUS} | head -1 | sed -r "s/## (\S+?)\.{3}.*/\\1/")'
         self.condition_code = '[ $? -eq 0 ]'
 
     def get_printable_length(self): return f'$((${{#GIT_BRANCH}} + {self.static_length}))'

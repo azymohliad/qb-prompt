@@ -51,7 +51,7 @@
             {
                 "type": "WG_JOBS_NUMBER",
                 "fg": 7,
-                "bg": 99,
+                "bg": 130,
                 "term": ""
             },
             {
@@ -64,15 +64,15 @@
         "right": [
             {
                 "type": "WG_SSH_ADDRESS",
-                "fg": 252,
-                "bg": 70,
+                "fg": 0,
+                "bg": 220,
                 "term": "",
                 "prefix": " 🗗 "
             },
             {
                 "type": "WG_GIT_BRANCH",
-                "fg": 0,
-                "bg": 252,
+                "fg": 7,
+                "bg": 241,
                 "term": "",
                 "prefix": "  "
             }

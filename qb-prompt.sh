@@ -9,8 +9,8 @@ if [ "${TERM}" != "xterm-256color" ]; then
 else
 
     if [ ${UID} -eq 0 ]; then
-        USER_BG="130"
-        USER_FG="7"
+        USER_BG="8;5;130m"
+        USER_FG="7m"
     else
         USER_BG="8;5;70m"
         USER_FG="7m"
@@ -19,9 +19,9 @@ else
     SSH_ADDRESS=$(echo ${SSH_CONNECTION} | sed -r "s/\S+ \S+ (\S+) \S+/\1/")
     if [ -n "${SSH_ADDRESS}" ]; then
         
-        WG_SSH_ADDRESS_CONTENT="\e[38;5;252m\e[48;5;70m\] 🗗 ${SSH_ADDRESS} \[\e[0m\e[48;5;70m\e[0m"
-        WG_SSH_ADDRESS_TRANSITION="\e[38;5;70m\]\["
-        WG_SSH_ADDRESS_LEN="$(({#SSH_ADDRESS} + 5))"
+        WG_SSH_ADDRESS_CONTENT="\e[30m\e[48;5;220m\] 🗗 ${SSH_ADDRESS} \[\e[0m\e[48;5;220m\e[0m"
+        WG_SSH_ADDRESS_TRANSITION="\e[38;5;220m\]\["
+        WG_SSH_ADDRESS_LEN="$((${#SSH_ADDRESS} + 5))"
     else
         
         WG_SSH_ADDRESS_CONTENT=""
@@ -38,8 +38,8 @@ else
         JOBS_NUM=$(jobs | wc -l)
         if [ ${JOBS_NUM} -gt 0 ]; then
             
-            WG_JOBS_NUMBER_CONTENT="\e[48;5;99m\e[38;5;241m\]\[\e[37m\] ${JOBS_NUM} \[\e[0m"
-            WG_JOBS_NUMBER_TRANSITION="\e[38;5;99m\]\["
+            WG_JOBS_NUMBER_CONTENT="\e[48;5;130m\e[38;5;241m\]\[\e[37m\] ${JOBS_NUM} \[\e[0m"
+            WG_JOBS_NUMBER_TRANSITION="\e[38;5;130m\]\["
             
         else
             
@@ -61,9 +61,9 @@ else
         fi
         GIT_STATUS=$(git status --porcelain -b 2> /dev/null)
         if [ $? -eq 0 ]; then
-            GIT_BRANCH=$(echo ${GIT_STATUS} | sed -rn "1s/## (\S+?)\.{3}.*/\1/p")
-            WG_GIT_BRANCH_CONTENT="\e[30m\e[48;5;252m\]  ${GIT_BRANCH} \[\e[0m\e[48;5;252m${WG_SSH_ADDRESS_TRANSITION}\e[0m"
-            WG_GIT_BRANCH_TRANSITION="\e[38;5;252m\]\["
+            GIT_BRANCH=$(echo ${GIT_STATUS} | head -1 | sed -r "s/## (\S+?)\.{3}.*/\1/")
+            WG_GIT_BRANCH_CONTENT="\e[37m\e[48;5;241m\]  ${GIT_BRANCH} \[\e[0m\e[48;5;241m${WG_SSH_ADDRESS_TRANSITION}\e[0m"
+            WG_GIT_BRANCH_TRANSITION="\e[38;5;241m\]\["
             WG_GIT_BRANCH_LEN="$((${#GIT_BRANCH} + 5))"
         else
             
