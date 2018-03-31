@@ -1,11 +1,8 @@
 # qb-prompt  
 
-< Place for a beautiful picture >
-
-
 ## Description
 
-**qb-prompt** is a **q**uick and **b**eautiful **prompt** for bash. It is visually inspired by [Powerline](https://github.com/powerline/powerline), which provides status lines and prompts for vim, tmux, bash, zsh and some other apps. **qb-prompt** aims to provide similar look and feel, but focuses on bash prompt only, which gives a freedom for the more efficient approach (more details below).
+**qb-prompt** is a **q**uick and **b**eautiful **prompt** for bash. It is visually inspired by [Powerline](https://github.com/powerline/powerline), which implements beautiful status lines and prompts for vim, tmux, bash, zsh and some other apps. **qb-prompt** aims to provide similar look and feel, but focuses on bash prompt only, which gives a freedom for the more efficient approach (more details below).
 
 **qb-prompt** supports several "widgets" (as I call parts of the prompt here), which can be toggled, reordered and variously configured by input `config.json`:
 * User marker - indicates if the current user is root or not with markers (`$` and `#`) and colors
@@ -18,14 +15,14 @@
 * Git marker - indicator of git repository
 * Git branch - indicator of git repository with current branch
 * Custom - any text or [bash prompt special character](https://www.gnu.org/software/bash/manual/bashref.html#Controlling-the-Prompt) natively decorated by qb-prompt. In fact, simplified alternatives for the majority of above widgets can be implemented using it
-* If you come up with a useful widget idea that can't be implemented by 'Custom' widget - feel free to [suggest](https://github.com/azymohliad/qb-prompt/issues/new) 
+* If you come up with a useful widget idea that can't be implemented by 'Custom' widget - feel free to suggest [here](https://github.com/azymohliad/qb-prompt/issues/new) 
 
 [Video overview (youtube)](https://www.youtube.com/watch?v=7FGvnQuVvH4)
 
 
 ## How it works
 
-* User provides prompt configuration (list of enabled widgets, their alignment side, position, colors, decorations, etc) in simple JSON-formatted file
+* User configures prompts (enabled widgets, their alignment side, position, colors, decorations, etc) in simple JSON-formatted file
 * Then the python script `generate.py` uses it to  generate not very human-readable but highly efficient shell script `qb-prompt.sh`
 * `qb-prompt.sh` provides ready to use prompts (environment variables `PS1`, `PS2`, `PS3`, `PS4` and `PROMPT_COMMAND` depending on configuration) for bash interpreter and should be simply sourced from `bashrc` file.
 
@@ -58,7 +55,7 @@ Add these lines to the end of your `~/.bashrc` (for the current user) or `/etc/b
 . /path/to/qb-prompt.sh
 ```
 
-**4. Restart the terminal and have fun**
+**4. Relogin to your bash and have fun**
 
 
 ## Plans and TODO:
@@ -72,7 +69,7 @@ Add these lines to the end of your `~/.bashrc` (for the current user) or `/etc/b
 
 ## Contributing
 
-Feel free to report issues or suggest improvements (including features, performance optimizations, coding style etc). But one of my priorities is to keep it lightweight and fast, so I might be sceptic about new features. 
+There is not much to do here. Feel free to report issues or suggest improvements (including features, performance optimizations, coding style etc). But one of my priorities is to keep it lightweight and fast, so I might be sceptic about new features.
 
 
 ## License
