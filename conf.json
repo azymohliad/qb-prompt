@@ -39,14 +39,12 @@
                 "secondary_bg": 130
             },
             {
-                "type": "WG_CUSTOM",
+                "type": "WG_CURRENT_DIR",
                 "fg": 7,
                 "bg": 241,
-                "term": "",
-                "fmt": "i",
-
-                "content": "\\w", 
-                "length": "${#PWD}"
+                "secondary_fg": 246,
+                "separator": "  ",
+                "term": ""
             },
             {
                 "type": "WG_JOBS_NUMBER",

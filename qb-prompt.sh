@@ -16,7 +16,7 @@ else
         USER_FG="7m"
     fi
     
-    SSH_ADDRESS=$(echo ${SSH_CONNECTION} | sed -r "s/\S+ \S+ (\S+) \S+/\1/")
+    SSH_ADDRESS=$(echo "${SSH_CONNECTION}" | sed -r "s/\S+ \S+ (\S+) \S+/\1/")
     if [ -n "${SSH_ADDRESS}" ]; then
         
         WG_SSH_ADDRESS_CONTENT="\e[30m\e[48;5;220m\] 🗗 ${SSH_ADDRESS} \[\e[0m\e[48;5;220m\e[0m"
@@ -61,7 +61,7 @@ else
         fi
         GIT_STATUS=$(git status --porcelain -b 2> /dev/null)
         if [ $? -eq 0 ]; then
-            GIT_BRANCH=$(echo ${GIT_STATUS} | head -1 | sed -r "s/## (\S+?)\.{3}.*/\1/")
+            GIT_BRANCH=$(echo "${GIT_STATUS}" | head -1 | sed -r "s/## (\S+?)\.{3}.*/\1/")
             WG_GIT_BRANCH_CONTENT="\e[37m\e[48;5;241m\]  ${GIT_BRANCH} \[\e[0m\e[48;5;241m${WG_SSH_ADDRESS_TRANSITION}\e[0m"
             WG_GIT_BRANCH_TRANSITION="\e[38;5;241m\]\["
             WG_GIT_BRANCH_LEN="$((${#GIT_BRANCH} + 5))"
@@ -72,5 +72,5 @@ else
             WG_GIT_BRANCH_LEN=0
         fi
         
-        export PS1="\[\e[s\e[$((${COLUMNS}-${WG_SSH_ADDRESS_LEN}-${WG_GIT_BRANCH_LEN}))C${WG_GIT_BRANCH_TRANSITION}${WG_GIT_BRANCH_CONTENT}${WG_SSH_ADDRESS_CONTENT}\e[u\e[4${USER_BG}\e[3${USER_FG}\e[1m\] \$ \[\e[0m\e[48;5;241m\e[3${USER_BG}\]\[\e[37m\e[3m\] \w \[\e[0m${WG_JOBS_NUMBER_CONTENT}${WG_ERROR_CODE_CONTENT}${WG_ERROR_CODE_TRANSITION}\e[0m \]"'
+        export PS1="\[\e[s\e[$((${COLUMNS}-${WG_SSH_ADDRESS_LEN}-${WG_GIT_BRANCH_LEN}))C${WG_GIT_BRANCH_TRANSITION}${WG_GIT_BRANCH_CONTENT}${WG_SSH_ADDRESS_CONTENT}\e[u\e[4${USER_BG}\e[3${USER_FG}\e[1m\] \$ \[\e[0m\e[48;5;241m\e[3${USER_BG}\]\[\e[37m\] $(echo "${PWD}" | sed -r "s|^${HOME}|~|;s|^(/?(\w\|[^/])+/)(.{$((${COLUMNS}/8)),})(/(\w\|[^/])+)$|\1...\4|;s|^/(.)|//\1|;s|(.)/|\1\\\\[\\\\e[38;5;246m\\\\]  \\\\[\\\\e[37m\\\\]|g") \[\e[0m${WG_JOBS_NUMBER_CONTENT}${WG_ERROR_CODE_CONTENT}${WG_ERROR_CODE_TRANSITION}\e[0m \]"'
 fi

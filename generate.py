@@ -10,6 +10,7 @@ widget_types = [
     'WG_USER_MARKER',
     'WG_USER_NAME',
     'WG_CUSTOM',
+    'WG_CURRENT_DIR',
     'WG_JOBS_NUMBER',
     'WG_ERROR_CODE',
     'WG_GIT_BRANCH',
@@ -131,7 +132,7 @@ class WgSshAddress(StaticWidget):
     def __init__(self, dct, is_right_aligned):
         super().__init__(dct, is_right_aligned)
         self.printable = f'{self.prefix}${{SSH_ADDRESS}}{self.sufix}'
-        self.pre_conditional_code = 'SSH_ADDRESS=$(echo ${SSH_CONNECTION} | sed -r "s/\S+ \S+ (\S+) \S+/\\1/")'
+        self.pre_conditional_code = 'SSH_ADDRESS=$(echo "${SSH_CONNECTION}" | sed -r "s/\S+ \S+ (\S+) \S+/\\1/")'
         self.condition_code = '[ -n "${SSH_ADDRESS}" ]'
 
     def get_printable_length(self): return f'$((${{#SSH_ADDRESS}} + {self.static_length}))'
@@ -211,6 +212,37 @@ class WgCustom(StaticWidget):
     def generate_init_code(self, prev_transition):
         return self.get_printable_length_definitions()[0]
 
+class WgCurrentDir(DynamicWidget):
+    def __init__(self, dct, is_right_aligned):
+        super().__init__(dct, is_right_aligned)
+        self.separator_fg = convert_color(dct.get('secondary_fg', DEFAULT_FG_COLOR))
+        self.limiter = dct.get('limiter', '$((${COLUMNS}/8))')
+        self.separator = dct.get('separator')
+
+    def get_printable_length(self): return 0
+
+    def generate_transition_code(self): return f'{F_FG}{self.bg}\]{self.term}\['
+
+    def generate_content_code(self, prev_transition):
+        sed_scripts = []
+        sed_replace_home = 's|^${HOME}|~|'
+        sed_scripts.append(sed_replace_home)
+        if self.limiter != None:
+            sed_shorten = f's|^(/?(\w\|[^/])+/)(.{{{self.limiter},}})(/(\w\|[^/])+)$|\\1...\\4|'
+            sed_scripts.append(sed_shorten)
+        if self.separator != None:
+            separator_color = f'\\\\\\\\[\\\\\\{F_FG}{self.separator_fg}\\\\\\\\]'
+            content_color = f'\\\\\\\\[\\\\\\{F_FG}{self.fg}\\\\\\\\]' 
+            sed_replace_separators = f's|^/(.)|//\\1|;s|(.)/|\\1{separator_color}{self.separator}{content_color}|g'
+            sed_scripts.append(sed_replace_separators)
+        sed_scripts = ';'.join(sed_scripts)
+        self.content = f'$(echo "${{PWD}}" | sed -r "{sed_scripts}")'
+        self.printable = self.prefix + self.content + self.sufix
+        return f'{self.get_content(prev_transition)}'
+
+    def generate_init_code(self, prev_transition):
+        return ''
+
 class WgJobsNumber(DynamicWidget):
     def __init__(self, dct, is_right_aligned):
         super().__init__(dct, is_right_aligned)
@@ -233,7 +265,7 @@ class WgGitBranch(DynamicWidget):
         super().__init__(dct, is_right_aligned)
         self.printable = f'{self.prefix}${{GIT_BRANCH}}{self.sufix}'
         self.pre_conditional_code = 'GIT_STATUS=$(git status --porcelain -b 2> /dev/null)'
-        self.conditional_success_code = 'GIT_BRANCH=$(echo ${GIT_STATUS} | head -1 | sed -r "s/## (\S+?)\.{3}.*/\\1/")'
+        self.conditional_success_code = 'GIT_BRANCH=$(echo "${GIT_STATUS}" | head -1 | sed -r "s/## (\S+?)\.{3}.*/\\1/")'
         self.condition_code = '[ $? -eq 0 ]'
 
     def get_printable_length(self): return f'$((${{#GIT_BRANCH}} + {self.static_length}))'
@@ -259,6 +291,8 @@ def create_widget(dct, is_right_aligned):
         widget = WgUserName(dct, is_right_aligned)
     elif widget_type == 'WG_CUSTOM':
         widget = WgCustom(dct, is_right_aligned)
+    elif widget_type == 'WG_CURRENT_DIR':
+        widget = WgCurrentDir(dct, is_right_aligned)
     elif widget_type == 'WG_JOBS_NUMBER':
         widget = WgJobsNumber(dct, is_right_aligned)
     elif widget_type == 'WG_ERROR_CODE':
