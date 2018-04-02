@@ -60,7 +60,6 @@ Add these lines to the end of your `~/.bashrc` (for the current user) or `/etc/b
 
 ## Plans and TODO:
 
-* Implement config validation
 * Refactor and comment the code
 * Describe input config fields in details
 * Provide several config examples
