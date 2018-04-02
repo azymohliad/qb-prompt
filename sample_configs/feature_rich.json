@@ -1,0 +1,90 @@
+{
+    "PS1": {
+        "left": [
+            {
+                "type": "WG_USER_MARKER",
+                "fg": 7,
+                "bg": 70,
+                "term": "",
+                "fmt": "b",
+                "secondary_fg": 7,
+                "secondary_bg": 130
+            },
+            {
+                "type": "WG_CURRENT_DIR",
+                "fg": 7,
+                "bg": 241,
+                "secondary_fg": 246,
+                "separator": "  ",
+                "term": ""
+            },
+            {
+                "type": "WG_JOBS_NUMBER",
+                "fg": 7,
+                "bg": 130,
+                "term": ""
+            },
+            {
+                "type": "WG_ERROR_CODE",
+                "fg": 7,
+                "bg": 52,
+                "term": ""
+            }
+        ],
+        "right": [
+            {
+                "type": "WG_SSH_ADDRESS",
+                "fg": 0,
+                "bg": 220,
+                "term": "",
+                "prefix": " 🗗 "
+            },
+            {
+                "type": "WG_GIT_BRANCH",
+                "fg": 7,
+                "bg": 241,
+                "term": "",
+                "prefix": "  "
+            }
+        ]
+    },
+
+    "PS2": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    },
+
+    "PS3": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    },
+
+    "PS4": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+
+                "content": "+",
+                "length": 1,
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    }
+}

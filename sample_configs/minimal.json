@@ -1,0 +1,53 @@
+{
+    "PS1": {
+        "left": [
+            {
+                // User marker
+                "type": "WG_CUSTOM",
+                "fg": 7,
+                "bg": 241,
+                "term": "",
+                "prefix": "",
+                "sufix": "",
+                "content": "\\\\$"  
+            }
+        ]
+    },
+
+    "PS2": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    },
+
+    "PS3": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    },
+
+    "PS4": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+                "content": "+",
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    }
+}
