@@ -2,7 +2,7 @@
 
 import re
 import json
-
+import sys
 
 # -- Default values --------------------------------------------------------------------------------
 DEFAULT_BG_COLOR = 9
@@ -12,6 +12,19 @@ DEFAULT_TERMINATOR = ''
 DEFAULT_PREFIX = ' '
 DEFAULT_SUFIX = ' '
 DEFAULT_CONTENT = ''
+
+DEFAULT_CONFIG_FILE = 'sample_configs/default.json'
+DEFAULT_OUTPUT_FILE = 'qb-prompt.sh'
+
+HELP = f'''\
+Generate bash prompt configuration script.
+
+Usage:
+    ./generate.py [config_file|-] [output_file]
+where
+    config_file - input json-formatted configuration file ('-' for default). Default: "{DEFAULT_CONFIG_FILE}"
+    output_file - output bash prompt configuration script. Default: "{DEFAULT_OUTPUT_FILE}"\
+'''
 
 
 # -- Helper variables ------------------------------------------------------------------------------
@@ -130,6 +143,7 @@ class StaticWidget(Widget): is_static = True
 
 class DynamicWidget(Widget): is_static = False
 
+
 # ------ WgSshMarker -------------------------------------------------------------------------------
 class WgSshMarker(StaticWidget):
     def init(self, dct, is_right_aligned):
@@ -138,6 +152,7 @@ class WgSshMarker(StaticWidget):
         self.condition_code = '[ -n "${SSH_TTY}" ]'
 
     def generate_printable_length_code(self): return self.get_printable_length()
+
 
 # ------ WgSshAddress ------------------------------------------------------------------------------
 class WgSshAddress(StaticWidget):
@@ -149,13 +164,15 @@ class WgSshAddress(StaticWidget):
 
     def get_printable_length(self): return f'$((${{#SSH_ADDRESS}} + {self.static_length}))'
 
+
 # ------ WgUserMarker ------------------------------------------------------------------------------
 class WgUserMarker(StaticWidget):
     def init(self, dct, is_right_aligned):
         super().init(dct, is_right_aligned)
-        self.printable = self.cfg.prefix + '\\$' + self.cfg.sufix
         self.cfg.root_bg = convert_color(dct.get('secondary_bg', DEFAULT_BG_COLOR))
         self.cfg.root_fg = convert_color(dct.get('secondary_fg', DEFAULT_FG_COLOR))
+        self.content = '\\\\$'
+        self.printable = self.cfg.prefix + self.content + self.cfg.sufix
 
     def get_content(self, prev_transition):
         if self.is_right_aligned:
@@ -187,6 +204,7 @@ class WgUserMarker(StaticWidget):
             '''
         return indent(code, -12)
 
+
 # ------ WgUserName --------------------------------------------------------------------------------
 class WgUserName(WgUserMarker):
     def init(self, dct, is_right_aligned):
@@ -196,6 +214,7 @@ class WgUserName(WgUserMarker):
     def get_printable_length(self): return f'$((${{#USER}} + {self.static_length}))'
 
     def generate_printable_length_code(self): return f'${{{self.cfg.type}_LEN}}'
+
 
 # ------ WgCustom ----------------------------------------------------------------------------------
 class WgCustom(StaticWidget):
@@ -227,8 +246,10 @@ class WgCustom(StaticWidget):
     def generate_init_code(self, prev_transition):
         return self.get_printable_length_definitions()[0]
 
+
 # ------ WgCurrentDir ------------------------------------------------------------------------------
 class WgCurrentDir(DynamicWidget):
+    # TODO: Invent smarter shortening algorithm
     def init(self, dct, is_right_aligned):
         super().init(dct, is_right_aligned)
         self.cfg.separator_fg = convert_color(dct.get('secondary_fg', DEFAULT_FG_COLOR))
@@ -245,11 +266,12 @@ class WgCurrentDir(DynamicWidget):
         sed_replace_home = 's|^${HOME}|~|'
         sed_scripts.append(sed_replace_home)
 
-        sed_shorten = f's|^(/?(\w\|[^/])+/)(.{{{self.cfg.limiter},}})(/(\w\|[^/])+)$|\\1...\\4|'
+        sed_shorten = f's|^(/?(\w\|[^/])+/)(.{{{self.cfg.limiter},}})(/(\w\|[^/])+)$|\\1···\\4|'
         sed_scripts.append(sed_shorten)
 
         separator_color = f'\\\\\\\\[\\\\\\{F_FG}{self.cfg.separator_fg}\\\\\\\\]'
-        content_color = f'\\\\\\\\[\\\\\\{F_FG}{self.cfg.fg}\\\\\\\\]' 
+        content_color = f'\\\\\\\\[\\\\\\{F_FG}{self.cfg.fg}\\\\\\\\]'
+
         sed_replace_separators = f's|^/(.)|//\\1|;s|(.)/|\\1{separator_color}{self.cfg.separator}{content_color}|g'
         sed_scripts.append(sed_replace_separators)
 
@@ -261,6 +283,7 @@ class WgCurrentDir(DynamicWidget):
     def generate_init_code(self, prev_transition):
         return ''
 
+
 # ------ WgJobsNumber ------------------------------------------------------------------------------
 class WgJobsNumber(DynamicWidget):
     def init(self, dct, is_right_aligned):
@@ -271,6 +294,7 @@ class WgJobsNumber(DynamicWidget):
     
     def get_printable_length(self): return f'$((${{#JOBS_NUM}} + {self.static_length}))'
 
+
 # ------ WgErrorCode -------------------------------------------------------------------------------
 class WgErrorCode(DynamicWidget):
     def init(self, dct, is_right_aligned):
@@ -279,6 +303,7 @@ class WgErrorCode(DynamicWidget):
         self.condition_code = '[ ${ERR_CODE} -ne 0 ]'
 
     def get_printable_length(self): return f'$((${{#ERR_CODE}} + {self.static_length}))'
+
 
 # ------ WgGitBranch -------------------------------------------------------------------------------
 class WgGitBranch(DynamicWidget):
@@ -290,6 +315,7 @@ class WgGitBranch(DynamicWidget):
         self.condition_code = '[ $? -eq 0 ]'
 
     def get_printable_length(self): return f'$((${{#GIT_BRANCH}} + {self.static_length}))'
+
 
 # ------ WgGitMarker -------------------------------------------------------------------------------
 class WgGitMarker(DynamicWidget):
@@ -376,7 +402,8 @@ class Prompt:
                 printable_lengths.append(str(printable_length_num))
             printable_length = '-'.join(printable_lengths)
             right_prompt = self.right[-1].generate_transition_code() + right_prompt
-            right_prompt = f'{F_SAVE_CURSOR}{F_MOVE_CURSOR_B}$((${{COLUMNS}}-{printable_length})){F_MOVE_CURSOR_E}{right_prompt}{F_RESTORE_CURSOR}'
+            right_prompt = f'{F_SAVE_CURSOR}{F_MOVE_CURSOR_B}$((${{COLUMNS}}-{printable_length}))'\
+                           f'{F_MOVE_CURSOR_E}{right_prompt}{F_RESTORE_CURSOR}'
         return f'\[{right_prompt}{left_prompt} \]'
 
 
@@ -431,20 +458,40 @@ class Prompts:
 # -- ENTRY POINT ----------------------------------------------------------------------------------#
 ####################################################################################################
 
+config_file = DEFAULT_CONFIG_FILE
+output_file = DEFAULT_OUTPUT_FILE
+if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
+  print(HELP)
+  exit(0)
+if len(sys.argv) > 1 and sys.argv[1] != '-':
+  config_file = sys.argv[1]
+if len(sys.argv) > 2:
+  output_file = sys.argv[2]
+
 # Read config
-with open('conf.json') as conf:
-    config = conf.read()
+try:
+    with open(config_file) as file: config = file.read()
+except FileNotFoundError: 
+    print(f'Iput file "{config_file}" not found')
+    exit(-1)
+except:
+    print("Failed to read input file:", sys.exc_info()[0])
+    exit(-1)
 
 # Parse config
 try:
     prompts_json = json.loads(re.sub(r'//.*', '', config))
     prompts = Prompts(prompts_json)
-except json.decoder.JSONDecodeError as error:
-    print(f'Failed to read input config:\n{str(error)}')
-    exit(-1)
-except RuntimeError as error:
+except (json.decoder.JSONDecodeError, RuntimeError) as error:
     print(f'Failed to parse input config:\n{str(error)}')
     exit(-1)
 
-# Generate output script
-print(prompts.generate())
+# Generate shell script
+code = prompts.generate()
+
+# Write generated script to output file
+try:
+    with open(output_file, 'w') as file: file.write(code)
+except:
+    print("Failed to write output file:", sys.exc_info()[0])
+    exit(-1)

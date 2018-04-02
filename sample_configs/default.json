@@ -1,0 +1,74 @@
+{
+    "PS1": {
+        "left": [
+            {
+                "type": "WG_USER_MARKER",
+                "fg": 7,
+                "bg": 70,
+                "term": "",
+                "fmt": "b",
+                "secondary_fg": 7,
+                "secondary_bg": 130
+            },
+            {
+                // Current directory
+                "type": "WG_CUSTOM",
+                "fg": 7,
+                "bg": 241,
+                "term": "",
+                "content": "\\w"
+            },
+            {
+                "type": "WG_JOBS_NUMBER",
+                "fg": 7,
+                "bg": 130,
+                "term": ""
+            },
+            {
+                "type": "WG_ERROR_CODE",
+                "fg": 7,
+                "bg": 52,
+                "term": ""
+            }
+        ]
+    },
+
+    "PS2": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    },
+
+    "PS3": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    },
+
+    "PS4": {
+        "left": [
+            {
+                "type": "WG_CUSTOM",
+                "bg": 241,
+                "term": "",
+
+                "content": "+",
+                "length": 1,
+                "prefix": "",
+                "sufix": ""
+            }
+        ]
+    }
+}
