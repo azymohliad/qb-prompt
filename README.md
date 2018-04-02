@@ -51,7 +51,7 @@ wget https://raw.githubusercontent.com/azymohliad/qb-prompt/master/qb-prompt.sh
 ```
 git clone https://github.com/azymohliad/qb-prompt.git && cd qb-prompt
 ```
-- Define your configuration in a config file (e.g. `config.json`). You can check `qb-prompt/sample_configs` as a starting point and customize it for your needs and taste
+- Define your configuration in a config file (e.g. `config.json`). You can check [sample_configs](https://github.com/azymohliad/qb-prompt/tree/master/sample_configs) as a starting point and customize them for your needs and taste. Check out [CONFIGURATION.md](https://github.com/azymohliad/qb-prompt/blob/master/CONFIGURATION.md) for more details
 - Generate `qb-prompt.sh`:
 ```
 ./generate.py [your/input/config.json] [your/output/qb-prompt.sh]

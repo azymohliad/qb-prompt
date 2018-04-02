@@ -1,6 +1,6 @@
 # Configuration
 
-**It might be helpfull to check `sample_configs` before reading this.**
+**It might be helpfull to check [sample_configs](https://github.com/azymohliad/qb-prompt/tree/master/sample_configs) before reading this.**
 
 Input config files for **qb-prompt** should be JSON-formatted and have following structure:
 ```
