@@ -253,7 +253,6 @@ class WgCurrentDir(DynamicWidget):
     def init(self, dct, is_right_aligned):
         super().init(dct, is_right_aligned)
         self.cfg.separator_fg = convert_color(dct.get('secondary_fg', DEFAULT_FG_COLOR))
-        self.cfg.limiter = dct.get('limiter', '$((${COLUMNS}/8))')
         self.cfg.separator = dct.get('separator', '/')
 
     def get_printable_length(self): return 0
@@ -266,14 +265,14 @@ class WgCurrentDir(DynamicWidget):
         sed_replace_home = 's|^${HOME}|~|'
         sed_scripts.append(sed_replace_home)
 
-        sed_shorten = f's|^(/?(\w\|[^/])+/)(.{{{self.cfg.limiter},}})(/(\w\|[^/])+)$|\\1···\\4|'
+        sed_shorten = 's|^(.{,${STEP}}/)(.{${STEP},})(/.{${STEP},}$)|\\1···\\3|'
         sed_scripts.append(sed_shorten)
 
-        separator_color = f'\\\\\\\\[\\\\\\{F_FG}{self.cfg.separator_fg}\\\\\\\\]'
-        content_color = f'\\\\\\\\[\\\\\\{F_FG}{self.cfg.fg}\\\\\\\\]'
-
-        sed_replace_separators = f's|^/(.)|//\\1|;s|(.)/|\\1{separator_color}{self.cfg.separator}{content_color}|g'
-        sed_scripts.append(sed_replace_separators)
+        if self.cfg.separator != '/':
+            separator_color = f'\\\\\\\\[\\\\\\{F_FG}{self.cfg.separator_fg}\\\\\\\\]'
+            content_color = f'\\\\\\\\[\\\\\\{F_FG}{self.cfg.fg}\\\\\\\\]'
+            sed_replace_separators = f's|^/(.)|//\\1|;s|(.)/|\\1{separator_color}{self.cfg.separator}{content_color}|g'
+            sed_scripts.append(sed_replace_separators)
 
         sed_scripts = ';'.join(sed_scripts)
         self.cfg.content = f'$(echo "${{PWD}}" | sed -r "{sed_scripts}")'
@@ -281,7 +280,10 @@ class WgCurrentDir(DynamicWidget):
         return f'{self.get_content(prev_transition)}'
 
     def generate_init_code(self, prev_transition):
-        return ''
+        code = '''
+            STEP=$((${COLUMNS}/8))
+        '''
+        return indent(code, -12)
 
 
 # ------ WgJobsNumber ------------------------------------------------------------------------------
