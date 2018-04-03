@@ -6,7 +6,7 @@
 
 ## Description
 
-**qb-prompt** (**q**uick and **b**eautiful **prompt**) is an easily-customizable bash prompt, which tries to combine good look and powerfull features with the best possible performance.  
+**qb-prompt** is an easily-customizable bash prompt, which tries to combine good look and powerfull features with the best possible performance.  
 
 It is visually inspired by [Powerline](https://github.com/powerline/powerline), which implements beautiful status lines and prompts for vim, tmux, bash, zsh and some other apps. **qb-prompt** aims to provide similar look and feel, but focuses on bash prompt only, which gives a freedom for the more efficient approach (more details below).  
 
@@ -24,7 +24,7 @@ It is visually inspired by [Powerline](https://github.com/powerline/powerline), 
 
 If you come up with a useful widget idea that can't be implemented by 'Custom' widget - feel free to suggest [here](https://github.com/azymohliad/qb-prompt/issues/new) 
 
-[Video overview (youtube)](https://www.youtube.com/watch?v=7FGvnQuVvH4)
+[Video overview (youtube)](https://www.youtube.com/watch?v=7FGvnQuVvH4) (a little outdated)
 
 
 ## How it works
