@@ -23,6 +23,7 @@ else
 
     export PROMPT_COMMAND='
         ERR_CODE=$?
+        STEP=$((${COLUMNS}/8))
         JOBS_NUM=$(jobs | wc -l)
         if [ ${JOBS_NUM} -gt 0 ]; then
             
@@ -48,5 +49,5 @@ else
             
         fi
         
-        export PS1="\[\e[4${USER_BG}\e[3${USER_FG}\e[1m\] \\$ \[\e[0m\e[48;5;241m\e[3${USER_BG}\]\[\e[37m\] \w \[\e[0m${WG_JOBS_NUMBER_CONTENT}${WG_ERROR_CODE_CONTENT}${WG_ERROR_CODE_TRANSITION}\e[0m \]"'
+        export PS1="\[\e[4${USER_BG}\e[3${USER_FG}\e[1m\] \\$ \[\e[0m\e[48;5;241m\e[3${USER_BG}\]\[\e[37m\] $(echo "${PWD}" | sed -r "s|^${HOME}|~|;s|^(.{,${STEP}}/)(.{${STEP},})(/.{${STEP},}$)|\1···\3|;s|^/(.)|//\1|;s|(.)/|\1\\\\[\\\\e[38;5;246m\\\\]  \\\\[\\\\e[37m\\\\]|g") \[\e[0m${WG_JOBS_NUMBER_CONTENT}${WG_ERROR_CODE_CONTENT}${WG_ERROR_CODE_TRANSITION}\e[0m \]"'
 fi

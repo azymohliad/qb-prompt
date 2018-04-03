@@ -48,7 +48,7 @@ sufix     | Additional sufix before actual content | ' ' | all
 content   | Content, when widget itself does not define it | '' | WG_CUSTOM, WG_SSH_MARKER, WG_GIT_MARKER
 secondary_fg | Secondary foreground color (concreete use is defined by widget) | 9 | WG_USER_NAME, WG_USER_MARKER, WG_CURRENT_DIR
 secondary_bg | Secondary background color (concreete use is defined by widget) | 9 | WG_USER_NAME, WG_USER_MARKER
-separator | Custom separator in path for WG_CURRENT_DIR | '' | WG_CURRENT_DIR
+separator | Custom separator in path for WG_CURRENT_DIR | '/' | WG_CURRENT_DIR
 length | Number of characters in content. Useful for right-aligned custom widgets with non-static content | length of static content | WG_CUSTOM
 
 Colors are represented as single 8-bit numbers, according to [this table](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit)

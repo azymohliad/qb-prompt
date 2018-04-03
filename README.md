@@ -46,7 +46,7 @@ Actually Powerline fonts is not a strict dependency, it's just the default confi
 ```
 wget https://raw.githubusercontent.com/azymohliad/qb-prompt/master/qb-prompt.sh
 ```
-Note that default config doesn't include git branch, ssh address widgets and uses simplified current working directory.  
+Note that default config doesn't include git branch and ssh address widgets.  
 
 **Customizable way**: generate it from your own configuration
 - Download or clone the repostory files

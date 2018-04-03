@@ -11,12 +11,12 @@
                 "secondary_bg": 130
             },
             {
-                "type": "WG_CURRENT_DIR",
+                // Current directory
+                "type": "WG_CUSTOM",
                 "fg": 7,
                 "bg": 241,
-                "secondary_fg": 246,
-                "separator": "  ",
-                "term": ""
+                "term": "",
+                "content": "\\w"
             },
             {
                 "type": "WG_JOBS_NUMBER",
