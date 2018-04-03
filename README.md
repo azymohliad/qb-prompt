@@ -1,5 +1,9 @@
 # qb-prompt  
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/4020369/38257464-d8592036-3792-11e8-8495-a5ba7204c7e2.png"/>
+</p>
+
 ## Description
 
 **qb-prompt** (**q**uick and **b**eautiful **prompt**) is an easily-customizable bash prompt, which tries to combine good look and powerfull features with the best possible performance.  
