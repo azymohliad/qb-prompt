@@ -30,7 +30,7 @@ If you come up with a useful widget idea that can't be implemented by 'Custom' w
 ## How it works
  
 * User configures prompts (enabled widgets, their alignment side, position, colors, decorations, etc) in simple JSON-formatted file
-* Then the python script `generate.py` uses it to generate not very human-readable but highly efficient shell script `qb-prompt.sh`
+* Then the python script `generate.py` uses it to generate not very human-readable but highly efficient shell script `qb-prompt.sh`. It is called only once when configuration is changed, **there is no python code in runtime!** 
 * `qb-prompt.sh` provides ready to use prompts (environment variables `PS1`, `PS2`, `PS3`, `PS4` and `PROMPT_COMMAND` depending on configuration) for bash interpreter and should be simply sourced from `bashrc` file.
 
 Generation stage tries to statically resolve needed values and hardcode them into the final script to minimize the runtime of the final script. However it is not always possible: some values must be evaluated every time you log in to shell (like ssh address, user highlighting color), and some values must be evaluated every time the prompt is printed (like background jobs number, error code, git branch, etc). It might have noticable effect on the performance, so choose widgets thoughtfully when configuring (although I haven't noticed any lag even with full feature set enabled). You can try different configs and compare the complexity of the resulting `qb-prompt.sh`.  
