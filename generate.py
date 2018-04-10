@@ -324,7 +324,7 @@ class WgGitMarker(DynamicWidget):
     def init(self, dct, is_right_aligned):
         super().init(dct, is_right_aligned)
         self.printable = self.cfg.prefix + self.cfg.content + self.cfg.sufix
-        self.condition_code = 'git status &> /dev/null'
+        self.condition_code = 'git branch &> /dev/null'
 
     def gen_printable_length_code(self): return self.get_printable_length()
 
@@ -406,7 +406,7 @@ class Prompt:
             right_prompt = self.right[-1].generate_transition_code() + right_prompt
             right_prompt = f'{F_SAVE_CURSOR}{F_MOVE_CURSOR_B}$((${{COLUMNS}}-{printable_length}))'\
                            f'{F_MOVE_CURSOR_E}{right_prompt}{F_RESTORE_CURSOR}'
-        return f'\[{right_prompt}{left_prompt} \]'
+        return f'\[{right_prompt}{left_prompt}\] '
 
 
 # -- Prompts ---------------------------------------------------------------------------------------
