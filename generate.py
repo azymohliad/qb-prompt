@@ -4,6 +4,10 @@ import re
 import json
 import sys
 
+if sys.version_info < (3,6):
+    print('Minimal required python version is 3.6. Sorry :(')
+    exit(-1)
+
 # -- Default values --------------------------------------------------------------------------------
 DEFAULT_BG_COLOR = 9
 DEFAULT_FG_COLOR = 9
@@ -15,28 +19,31 @@ DEFAULT_CONTENT = ''
 
 DEFAULT_CONFIG_FILE = 'sample_configs/default.json'
 DEFAULT_OUTPUT_FILE = 'qb-prompt.sh'
+PROFILING_INFO_FILE = '/tmp/qb-prompt.profile'
 
 HELP = f'''\
 Generate bash prompt configuration script.
 
 Usage:
-    ./generate.py [config_file|-] [output_file]
+    ./generate.py [config_file|-] [output_file] [-b|--benchmark]
 where
     config_file - input json-formatted configuration file ('-' for default). Default: "{DEFAULT_CONFIG_FILE}"
     output_file - output bash prompt configuration script. Default: "{DEFAULT_OUTPUT_FILE}"\
+    -b --benchmark - add benchmarks, measuring script loading and prompt rendering time.
 '''
 
 
 # -- Helper variables ------------------------------------------------------------------------------
-F_BOLD           = "\e[1m"
-F_ITALIC         = "\e[3m"
-F_BG             = "\e[4"
-F_FG             = "\e[3"
-F_END            = "\e[0m"
-F_SAVE_CURSOR    = "\e[s"
-F_RESTORE_CURSOR = "\e[u"
-F_MOVE_CURSOR_B  = "\e["
-F_MOVE_CURSOR_E  = "C"
+F_BOLD           = '\e[1m'
+F_ITALIC         = '\e[3m'
+F_BG             = '\e[4'
+F_FG             = '\e[3'
+F_END            = '\e[0m'
+F_SAVE_CURSOR    = '\e[s'
+F_RESTORE_CURSOR = '\e[u'
+F_MOVE_CURSOR_B  = '\e['
+F_MOVE_CURSOR_E  = 'C'
+NULL_STRING = '#>> to be wiped <<#'
 
 
 # -- Helper functions ------------------------------------------------------------------------------
@@ -57,9 +64,10 @@ def convert_formatting(fmt):
 
 def indent(code, size):
     if size < 0:
-        return ''.join(line[-size:] for line in code.splitlines(True))
+        strip = re.compile(f' {{,{-size}}}(.*)')
+        return '\n'.join(strip.search(line).group(1) for line in code.splitlines())
     else:
-        return ''.join(' '*size + line for line in code.splitlines(True))
+        return '\n'.join(' '*size + line for line in code.splitlines())
 
 
 # -- Widget Classes --------------------------------------------------------------------------------
@@ -80,10 +88,10 @@ class Widget:
         # Define other fields
         self.static_length = len(self.cfg.term) + len(self.cfg.prefix) + len(self.cfg.sufix)
         self.printable = ''
-        self.pre_conditional_code = ''
+        self.pre_conditional_code = NULL_STRING
         self.condition_code = ':'
-        self.conditional_success_code = ''
-        self.conditional_fail_code = ''
+        self.conditional_success_code = NULL_STRING
+        self.conditional_fail_code = NULL_STRING
 
     def validate(self):
         for key, val in self.cfg.__dict__.items():
@@ -108,11 +116,11 @@ class Widget:
     def get_printable_length_definitions(self):
         printable_length = self.get_printable_length()
         if self.is_right_aligned and not isinstance(printable_length, int):
-            length_definition_visible = f'{self.cfg.type}_LEN="{self.get_printable_length()}"\n'
-            length_definition_hidden = f'{self.cfg.type}_LEN=0\n'
+            length_definition_visible = f'{self.cfg.type}_LEN="{self.get_printable_length()}"'
+            length_definition_hidden = f'{self.cfg.type}_LEN=0'
             return (length_definition_visible, length_definition_hidden)
         else:
-            return ('', '')
+            return (NULL_STRING, NULL_STRING)
 
 
     def generate_printable_length_code(self): return f'${{{self.cfg.type}_LEN}}'
@@ -123,7 +131,8 @@ class Widget:
 
     def generate_init_code(self, prev_transition):
         length_definition_visible, length_definition_hidden = self.get_printable_length_definitions()
-        code = f'''\
+        code = f'''
+            # {self.cfg.type}
             {self.pre_conditional_code}
             if {self.condition_code}; then
                 {self.conditional_success_code}
@@ -192,7 +201,8 @@ class WgUserMarker(StaticWidget):
     def generate_content_code(self, prev_transition): return self.get_content(prev_transition)
 
     def generate_init_code(self, prev_transition):
-        code = f'''\
+        code = f'''
+            # {self.cfg.type}
             if [ ${{UID}} -eq 0 ]; then
                 USER_BG="{self.cfg.root_bg}"
                 USER_FG="{self.cfg.root_fg}"
@@ -238,13 +248,13 @@ class WgCustom(StaticWidget):
     def generate_transition_code(self): return f'{F_FG}{self.cfg.bg}\]{self.cfg.term}\['
 
     def generate_content_code(self, prev_transition):
-        if len(self.printable) == 0 and len(prev_transition) == 0:
+        if not self.printable and not prev_transition:
             return ''
         else:
             return self.get_content(prev_transition)
 
     def generate_init_code(self, prev_transition):
-        return self.get_printable_length_definitions()[0]
+        return self.get_printable_length_definitions()[0] + '\n'
 
 
 # ------ WgCurrentDir ------------------------------------------------------------------------------
@@ -280,8 +290,9 @@ class WgCurrentDir(DynamicWidget):
         return f'{self.get_content(prev_transition)}'
 
     def generate_init_code(self, prev_transition):
-        code = '''
-            STEP=$((${COLUMNS}/8))
+        code = f'''
+            # {self.cfg.type}
+            STEP=$((${{COLUMNS}}/8))
         '''
         return indent(code, -12)
 
@@ -417,9 +428,21 @@ class Prompts:
         self.ps3 = Prompt('PS3', dct.get('PS3'))
         self.ps4 = Prompt('PS4', dct.get('PS4'))
 
-    def generate(self):
+    def generate(self, benchmarking = False):
         static_code = ''
         dynamic_code = ''
+        static_prompts = ''
+        dynamic_prompts = ''
+
+        if benchmarking:
+            dynamic_code += '\nexport QB_PROMPT_BENCH_TS=$(date +%s%N)\n'
+            bench_ps = '\$(echo \\" \$((\$(date +%s%N) - \${QB_PROMPT_BENCH_TS}))\\" | ' + \
+                       f'sed -r \\"s/.*(.{{2}})(.{{6}}$)/[\\1.\\2] /\\" | tee -a {PROFILING_INFO_FILE})'
+            bench_script_start = '\nSCRIPT_INIT_BENCH_TS=$(date +%s%N)\n\n'
+            bench_script_end = '\necho "Init time: $(($(date +%s%N) - ${SCRIPT_INIT_BENCH_TS}))" | ' + \
+                               f'sed -r "s/(.+)(.{{6}}$)/\\1.\\2 ms/" | tee -a {PROFILING_INFO_FILE}\n' 
+        else:
+            bench_ps = bench_script_start = bench_script_end = ''
 
         for ps in [self.ps1, self.ps2, self.ps3, self.ps4]:
             preconditions = ps.generate_init_codes(False)
@@ -429,32 +452,42 @@ class Prompts:
             static_code += preconditions[0]
             dynamic_code += preconditions[1]
 
+            if ps is not self.ps1: bench_ps = ''
             if ps.static_only():
-                static_code += f'\nexport {ps.name}="{ps.generate_content_code()}"'
+                static_prompts += f'export {ps.name}="{ps.generate_content_code()}{bench_ps}"\n'
             else:
-                dynamic_code += f'\nexport {ps.name}="{ps.generate_content_code()}"'
+                dynamic_prompts += f'export {ps.name}="{ps.generate_content_code()}{bench_ps}"\n'
 
-        if len(dynamic_code) > 0:
-            dynamic_code=f'''\
+        if static_prompts: static_code += '\n' + static_prompts
+        if dynamic_prompts: dynamic_code += '\n' + dynamic_prompts
+
+        if dynamic_code:
+            dynamic_code=f'''
                 export PROMPT_COMMAND='
-                    ERR_CODE=$?\n{indent(dynamic_code, 20)}'\n'''
+                    ERR_CODE=$?
+                    {indent(dynamic_code, 20)}
+                ' '''
 
         code = f'''\
             #!/bin/bash
-            
+
             # This file is generated automatically by qb-prompt/generate.py
             # It is not recommended to edit it manually
-            
+            {indent(bench_script_start, 12)}
             # Apply only if terminal supports 8-bit colors 
             if [ "${{TERM}}" != "xterm-256color" ]; then
                 echo "qb-prompt: terminal does not support 8-bit colors"
             else
-            \n{indent(static_code, 16)}
-            \n{dynamic_code}
-            fi'''
+                {indent(static_code, 16)}
+                {dynamic_code}
+            fi
+            {indent(bench_script_end,12)}
+            '''
 
-        return indent(code, -12)
-
+        code = indent(code, -12)
+        code = re.sub(f'\n *{NULL_STRING}.*', '', code)
+        code = re.sub(' *$', '', code, flags = re.M)
+        return code
 
 ####################################################################################################
 # -- ENTRY POINT ----------------------------------------------------------------------------------#
@@ -462,13 +495,16 @@ class Prompts:
 
 config_file = DEFAULT_CONFIG_FILE
 output_file = DEFAULT_OUTPUT_FILE
+benchmarking = False
 if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
   print(HELP)
   exit(0)
 if len(sys.argv) > 1 and sys.argv[1] != '-':
   config_file = sys.argv[1]
-if len(sys.argv) > 2:
+if len(sys.argv) > 2 and sys.argv[2] != '-':
   output_file = sys.argv[2]
+if len(sys.argv) > 3 and sys.argv[3] in ['-b', '--benchmark']:
+    benchmarking = True
 
 # Read config
 try:
@@ -489,7 +525,7 @@ except (json.decoder.JSONDecodeError, RuntimeError) as error:
     exit(-1)
 
 # Generate shell script
-code = prompts.generate()
+code = prompts.generate(benchmarking)
 
 # Write generated script to output file
 try:
