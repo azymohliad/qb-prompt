@@ -90,8 +90,8 @@ user_dir_simple         |  1.76 ms |  3.95 ms |  6.93 ms
 
 Script loading time was always under 10 ms.
 
-*My software and hardware:
-Software: Tilix, ArchLinux, Gnome 3.28, Xorg
+*My software and hardware:  
+Software: Tilix, ArchLinux, Gnome 3.28, Xorg  
 Hardware: Intel Core i5-4310M CPU @ 2.70GHz, 8GB DDR3 RAM, integrated Intel graphics, 5400rpm HDD*
 
 
