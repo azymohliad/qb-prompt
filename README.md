@@ -72,6 +72,29 @@ Add these lines to the end of your `~/.bashrc` (for the current user) or `/etc/b
 **4. Relogin to your bash and have fun**
 
 
+## Benchmarks
+
+To profile the primary prompt rendering time I calculate the difference between timestamps at the end of `PS1` and at the beginning of `PROMPT_COMMAND`. Timestamps are taken with `date +%s%N` bash command.
+To profile the script initial loading time I took the difference between timestamps at the end and at the beginning of the script.
+
+Here are the benchmarking results of primary prompt rendering time on my machine for sample configurations while navigating the terminal for few minutes:
+
+ Configuration          |    Min   |    Avg   |   Max
+------------------------|----------|----------|----------
+default                 |  6.86 ms | 11.27 ms | 17.32 ms
+default_simplified_dir  |  3.38 ms |  6.45 ms |  9.52 ms
+feature_rich            |  8.77 ms | 15.82 ms | 25.47 ms
+minimal                 |  2.10 ms |  3.79 ms |  5.64 ms
+user_dir_dynamic        |  5.45 ms |  9.57 ms | 16.11 ms
+user_dir_simple         |  1.76 ms |  3.95 ms |  6.93 ms
+
+Script loading time was always under 10 ms.
+
+*My software and hardware:
+Software: Tilix, ArchLinux, Gnome 3.28, Xorg
+Hardware: Intel Core i5-4310M CPU @ 2.70GHz, 8GB DDR3 RAM, integrated Intel graphics, 5400rpm HDD*
+
+
 ## Contributing
 
 There is not much to do here. Feel free to report issues or suggest small improvements (including features, performance optimizations, coding style etc). But one of my priorities is to keep it lightweight and fast, so I might be sceptic about new features.
