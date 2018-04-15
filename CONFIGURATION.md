@@ -55,45 +55,45 @@ Colors are represented as single 8-bit numbers, according to [this table](https:
 
 ## Available widgets:
 
-There are multiple different widgets available. Each adds some specific behaviour to your prompt. I divide them into two main categories: *statically dispatched* and *dynamically dispatched*. Statically dispatched widgets have the same inner values for the whole session. They may require to process some data on session login, but don't have any implicit runtime after that. Dynamically dispatched widgets process some data and optionally update their inner values every time the prompt is reprinted. They make use of special `PROMPT_COMMAND` variable to achieve that. The point of this story is that statically dispatched widgets might theoretically cause lags when you launch the terminal, and dynamically dispatched widgets may slow down the prompt reprinting.  
+There are multiple different widgets available. Each adds some specific behaviour to your prompt. I divide them into two main categories: *statically evaluated* and *dynamically evaluated*. Statically evaluated widgets have the same inner values for the whole session. They may require to process some data on session login, but don't have any implicit runtime after that. Dynamically evaluated widgets process some data and optionally update their inner values every time the prompt is reprinted. They make use of special `PROMPT_COMMAND` variable to achieve that. The point of this story is that statically evaluated widgets might theoretically cause lags when you launch the terminal, and dynamically evaluated widgets may slow down the prompt reprinting.  
 
 ### WG_USER_MARKER
-*static dispatch*  
+*statically evaluated*  
 Displays '#' for root, '$' for other users. Also `root` user is decorated by `secondary_bg` and `secondary_fg` colors.
 
 ### WG_USER_NAME
-*static dispatch*  
+*statically evaluated*  
 Displays username. `root` user is decorated by `secondary_bg` and `secondary_fg` colors.
 
 ### WG_SSH_MARKER
-*static dispatch*  
+*statically evaluated*  
 Indicates when on SSH connection: if this prompt is set on a machine accessed by SSH it will contain static marker to the prompt. There's no point from this widget on machine which you always control directly (e.g. laptop).
 
 ## WG_SSH_ADDRESS
-*static dispatch*  
+*statically evaluated*  
 Displays server address when on SSH connection: if this prompt is used on a machine accessed by SSH it will contain the address by which server was accessed. There's no point from this widget on machine which you always control directly (e.g. laptop).
 
 ### WG_CURRENT_DIR
-*dynamic dispatch*  
+*dynamically evaluated*  
 Displays current working directory path with some additional processing: use custom separators between directories instead of '/' (it allows to achieve some nice-looking effects), shorten the path by replacing the middle part with '...'. If you don't need this effects, consider using 0-overhead `WG_CUSTOM` with '\\w' content instead.
 
 ### WG_JOBS_NUMBER
-*dynamic dispatch*  
+*dynamically evaluated*  
 Display background jobs number if any.
 
 ### WG_ERROR_CODE
-*dynamic dispatch*  
+*dynamically evaluated*  
 Display return code for last command if error. The error code will be displayed until you execute next command successfully.
 
 ### WG_GIT_BRANCH
-*dynamic dispatch*  
+*dynamically evaluated*  
 Display current git branch when your current working directory is a git repository.
 
 ### WG_GIT_MARKER
-*dynamic dispatch*  
+*dynamically evaluated*  
 Indicate static marker if your current working directory is a git repository.
 
 ### WG_CUSTOM
-*static dispatch*  
+*statically evaluated*  
 Any custom text. It may be a static text, [bash prompt special character](https://www.gnu.org/software/bash/manual/bashref.html#Controlling-the-Prompt), bash commands `\\$(cmd)`, variables `\\${var}`, etc. If you want to align it from the right side and use non-static text, you should also provide `length` attribute (as a number or bash command to calculate it), otherwise the alignment will be incorrect.
 

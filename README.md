@@ -41,9 +41,8 @@ This approach allows having both: convenient configuration and the best performa
 ## Installation
 
 **1. Install dependencies**  
-qb-prompt uses Powerline fonts. Check out [this link](https://powerline.readthedocs.io/en/latest/installation/linux.html#fonts-installation) for installation instructions. Note, if you have an error on the 4th step (no such file or directory ~/.config/fontconfig/conf.d/) - just create it.
-If you use Arch Linux simply install `powerline-fonts` package.  
-Actually Powerline fonts is not a strict dependency, it's just the default config uses it. You can use any custom fonts for widget terminators, directory separators, etc. But if you want these beatiful arrowed backgrounds - you need Powerline fonts.
+qb-prompt uses Powerline fonts. Check out [this link](https://powerline.readthedocs.io/en/latest/installation.html#fonts-installation) for installation instructions. Some Linux distros have a package for it in their repos. For example, `powerline-fonts` in ArchLinux, `fonts-powerline` in Ubuntu.  
+Strictly saying, Powerline fonts is a (very) recommended dependency, but not required. The default config uses it for widget transitions, directory separators, etc, but you can change them to any characters you like. Although if you want these beatiful arrowed backgrounds - you need Powerline fonts.
 
 **2. Get qb-prompt.sh**  
 **Simple way**: download `qb-prompt.sh` generated with default configuration from repository
